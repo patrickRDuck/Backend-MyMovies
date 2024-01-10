@@ -6,7 +6,7 @@ const AppError = require('../utils/AppError.js')
 class notesController {
     async create(request, response) {
         const { title, description, rating, tags } = request.body
-        const { user_id } = request.params
+        const { id: user_id } = request.user
 
         const [ note_id ] = await knex('movie_notes').insert({
             title,
@@ -49,7 +49,8 @@ class notesController {
     }
 
     async index(request, response) {
-        const { tags, title, user_id} = request.query
+        const { tags, title } = request.query
+        const user_id = request.user.id
 
         let notes
 
@@ -69,8 +70,6 @@ class notesController {
             .whereLike('title', `%${title}%`)
             .orderBy('title')
         }
-
-        console.log(notes)
 
         const userTags = await knex('movie_tags').where({user_id})
         const notesWithTags = notes.map( note => {
