@@ -5,6 +5,7 @@ const routes = require('./routes/index.js')
 const migrationRun = require('./database/sqlite/migrations/index.js')
 const cors = require('cors')
 const UPLOADCONFIG = require('./configs/upload.js')
+require('dotenv').config()
 
 migrationRun()
 
@@ -31,5 +32,5 @@ app.use((error, request, response, next) => {
     })
 })
 
-const PORT = 3333
+const PORT = parseInt(process.env.PORT)
 app.listen(PORT, console.log(`Server is running on port ${PORT}`))

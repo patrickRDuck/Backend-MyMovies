@@ -2,6 +2,7 @@ const AppError = require("../utils/AppError")
 const knex = require('../database/knex/index.js')
 const sqliteConnection = require('../database/sqlite/index.js')
 const bcrypt = require('bcrypt')
+const {transportEmail} = require("../utils/transporterEmail.js")
 
 class UsersController {
     async create(request, response) {
@@ -30,10 +31,18 @@ class UsersController {
         const { name, email, password, old_password} = request.body
         const { id } = request.user
 
+        console.log({
+            name,
+            email,
+            old_password,
+            password,
+            id
+        })
+
         const database = await sqliteConnection()
 
         const user = await database.get('SELECT * FROM users WHERE id = (?)', [id])
-        console.log(user)
+        
         if(!user) {
             throw new AppError('Usuário não encontrado')
         }
@@ -68,6 +77,19 @@ class UsersController {
             updated_at = DATETIME('now')
             WHERE ID = (?)
         `, [user.name, user.email, user.password, id])
+
+        transportEmail.sendMail({
+            from: "MyMovies.nortifications@gmail.com",
+            to: String(user.email),
+            subject: "Atualização de dados na conta",
+            text: "A sua conta na plataforma MyMovies foi atualizada! Caso não tenha sido feita por você entre em contato com o suporte"
+        }, (error, info) => {
+            if(error) {
+                console.error(error)
+            } else {
+                console.log(`E-mail envaido com sucesso: ${info.response}`)
+            }
+        })
         
         return response.json()
     }

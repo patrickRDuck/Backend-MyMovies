@@ -1,6 +1,4 @@
-const { request, response } = require('express')
 const knex = require('../database/knex/index.js')
-const sqliteConnection = require('../database/sqlite/index.js')
 const AppError = require('../utils/AppError.js')
 
 class notesController {
@@ -65,10 +63,16 @@ class notesController {
             .join('movie_notes', 'movie_tags.user_id', 'movie_notes.user_id')
             .orderBy('title')
         } else {
-            notes = await knex('movie_notes')
-            .where({user_id})
-            .whereLike('title', `%${title}%`)
-            .orderBy('title')
+            if(title) {
+                notes = await knex('movie_notes')
+                .where({user_id})
+                .whereLike('title', `%${title}%`)
+                .orderBy('title')
+            } else {
+                notes = await knex('movie_notes')
+                .where({user_id})
+                .orderBy('id', 'desc')
+            }
         }
 
         const userTags = await knex('movie_tags').where({user_id})
