@@ -10,7 +10,9 @@ require('dotenv').config()
 migrationRun()
 
 const app = express()
-app.use(cors())
+app.use(cors({
+    origin: "https://moviesmy.netlify.app"
+}))
 app.use(express.json())
 
 app.use('/files', express.static(UPLOADCONFIG.UPLOADS_FOLDER))
