@@ -1,16 +1,16 @@
 const AppError = require("../utils/AppError")
-const knex = require('../database/knex/index.js')
 const sqliteConnection = require('../database/sqlite/index.js')
 const bcrypt = require('bcrypt')
 const {transportEmail} = require("../utils/transporterEmail.js")
+const UserRepository = require("../repositories/UserRespository.js")
 
 class UsersController {
     async create(request, response) {
         const {name, email, password} = request.body 
 
-        const database = await sqliteConnection()
+        const userRepository = new UserRepository()
         
-        const verifyUser = await database.get('SELECT * FROM users WHERE email = (?)', [email])
+        const verifyUser = await userRepository.findByEmail(email)
 
         if(verifyUser) {
             throw new AppError('Este Email já está em uso')
@@ -18,11 +18,7 @@ class UsersController {
         
         const hashedPassword = await bcrypt.hash(password, 8)
 
-        await knex('users').insert({
-            name,
-            email,
-            password: hashedPassword
-        })
+        await userRepository.create({name, email, password: hashedPassword})
 
         response.status(201).json()
     }
